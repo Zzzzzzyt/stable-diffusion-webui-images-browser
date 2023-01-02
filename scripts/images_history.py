@@ -18,7 +18,7 @@ loads_files_num = 0
 path_recorder_filename = os.path.join(scripts.basedir(), "path_recorder.txt")
 image_ext_list = [".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"]
 
-def reduplicative_file_move(src, dst):
+def reduplicative_file_move(src, dst,copy=False,dedupe=True):
     def same_name_file(basename, path):
         name, ext = os.path.splitext(basename)
         f_list = os.listdir(path)
@@ -37,14 +37,20 @@ def reduplicative_file_move(src, dst):
     name = os.path.basename(src)
     save_name = os.path.join(dst, name)
     if not os.path.exists(save_name):
-        shutil.move(src, dst)
-    else:
+        if copy:
+            shutil.copy(src,dst)
+        else:
+            shutil.move(src, dst)
+    elif dedupe:
         name = same_name_file(name, dst)
-        shutil.move(src, os.path.join(dst, name))
+        if copy:
+            shutil.copy(src, os.path.join(dst, name))
+        else:
+            shutil.move(src, os.path.join(dst, name))
 
 def save_image(file_name):
     if file_name is not None and os.path.exists(file_name):
-        reduplicative_file_move(file_name, opts.outdir_save)
+        reduplicative_file_move(file_name, opts.outdir_save,copy=True,dedupe=False)
         return "<div style='color:#999'>Moved to favorites</div>"
     else:
         return "<div style='color:#999'>Image not found (may have been already moved)</div>"

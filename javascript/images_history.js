@@ -161,6 +161,24 @@ function images_history_init(){
     } 
 }
 
+function refocus(){
+    if (images_history_tab_list != ""){
+        for (var i in images_history_tab_list ){
+            let tabname = images_history_tab_list[i]
+            var buttons = gradioApp().querySelectorAll('#' + tabname + '_images_history .gallery-item');
+            buttons.forEach(function(btn){
+                if(btn.firstChild['src']==zzzyt_last_image_src&&!btn.classList.contains('group')){
+                    setTimeout(()=>{
+                        btn.focus();
+                        console.log(btn);
+                    },1);
+                }
+            })
+        }
+    }
+}
+
+var zzzyt_last_image_src="";
 let timer
 var images_history_tab_list = "";
 setTimeout(images_history_init, 500);
@@ -170,6 +188,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
             for (var i in images_history_tab_list ){
                 let tabname = images_history_tab_list[i]
+
+                var image=gradioApp().querySelectorAll('#' + tabname + '_images_history_gallery > div.absolute.group > img')[0];
+                if(image){
+                    var mutationObserver2=new MutationObserver(function(m){
+                        var image=m[0]['target'];
+                        var cursrc=image['src'];
+                        if(cursrc!=zzzyt_last_image_src){
+                            var buttons = gradioApp().querySelectorAll('#' + tabname + '_images_history .gallery-item');
+                            buttons.forEach(function(btn){
+                                if(btn.firstChild['src']==cursrc&&!btn.classList.contains('group')){
+                                    images_history_click_image.bind(btn)();
+                                }
+                            })
+                            zzzyt_last_image_src=cursrc;
+                        }
+                    });
+                    mutationObserver2.observe(image,{attributes:true});
+                }
+
                 var buttons = gradioApp().querySelectorAll('#' + tabname + '_images_history .gallery-item');
                 buttons.forEach(function(bnt){    
                     bnt.addEventListener('click', images_history_click_image, true);
@@ -190,11 +227,15 @@ document.addEventListener("DOMContentLoaded", function() {
                         gradioApp().getElementById(tabname + '_images_history_renew_page').click();
                     }, false);
                 }
-
+                
+                var buttons_control = gradioApp().querySelectorAll('#' + tabname + '_images_history_button_panel button');
+                buttons_control.forEach(function(btn){
+                    btn.addEventListener('click',refocus);
+                });
             }     
         }
     });
-    mutationObserver.observe(gradioApp(), { childList:true, subtree:true });
+    mutationObserver.observe(gradioApp(), { childList:true, subtree:true});
 });
 
 
